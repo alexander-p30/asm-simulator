@@ -33,6 +33,7 @@ program_data times BUFF_SIZE dd 0
 program_size dd 0
 program_size_in_bytes dd 0
 
+
 used_instructions	times BUFF_SIZE db 0
 used_instructions_count	dd 0
 
@@ -44,6 +45,9 @@ fname resb BUFF_SIZE
 
 ; func print_int
 digits_string resb BUFF_SIZE
+
+; runtime
+program_input resb BUFF_SIZE
 
 section .text
 global _start
@@ -271,6 +275,41 @@ run_store:
 				jmp run_program_loop
 
 run_input:
+				inc ebx
+				push eax
+				push ebx
+
+				; get input
+				mov eax, 3
+				mov ebx, 1
+				mov ecx, program_input
+				mov edx, BUFF_SIZE
+				int 80h
+				; 0-terminate input
+				mov byte [ecx + eax - 1], 0
+
+				; restore ebx as PC
+				pop ebx
+
+				; load target address into ecx
+				mov eax, dword [program_data + ebx * 4]
+				; convert program address into internal address
+				mov edx, 0
+				mov ecx, 4
+				mul ecx
+				add eax, program_data
+
+				; edx = input int
+				push program_input
+				call string_to_int
+				add ESP, 4
+
+				; store converted input into target address
+				mov [eax], edx
+
+				; restore eax as acc
+				pop eax
+				inc ebx
 				jmp run_program_loop
 
 run_output:
