@@ -108,6 +108,11 @@ run_program:
 				mov ebx, 0
 
 run_program_loop:
+				; DEBUG PRINT ACC
+				;push eax
+				;call print_int
+				;add ESP, 4
+
 				; check if end of program was reached
 				cmp dword [program_size], ebx
 				je end
@@ -226,6 +231,20 @@ run_jmpz:
 				jmp run_program_loop
 
 run_copy:
+				inc ebx
+				push eax
+				; load target address
+				mov edx, dword [program_data + ebx * 4]
+				; load source address
+				inc ebx
+				mov eax, dword [program_data + ebx * 4]
+				; load source value
+				mov ecx, dword [program_data + eax * 4]
+				; store source value into target address
+				mov dword [program_data + edx * 4], ecx
+				; restore eax as acc
+				pop eax
+				inc ebx
 				jmp run_program_loop
 
 run_load:
@@ -240,6 +259,15 @@ run_load:
 				jmp run_program_loop
 
 run_store:
+				inc ebx
+				push ebx
+				; load target address
+				mov ebx, dword [program_data + ebx * 4]
+				; store acc value into target address
+				mov dword [program_data + ebx * 4], eax
+				; restore ebx as PC
+				pop ebx
+				inc ebx
 				jmp run_program_loop
 
 run_input:
@@ -250,7 +278,9 @@ run_output:
 				push ebx
 				; load value address
 				mov ebx, dword [program_data + ebx * 4]
+				; load value in address into ecx
 				mov ecx, dword [program_data + ebx * 4]
+				; print ecx
 				push ecx
 				call print_int
 				add ESP, 4
@@ -359,8 +389,9 @@ print_int:
 				enter 0, 0
 
 				push dword INT_TO_PRINT
-				push digits_string
+				push dword digits_string
 				call int_to_string
+				add ESP, 8
 
 				push eax
 				push ebx
