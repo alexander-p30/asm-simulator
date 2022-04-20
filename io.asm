@@ -22,12 +22,19 @@
 section .data
 prompt_fname db 'Digite o nome do arquivo: '
 prompt_fname_size equ $-prompt_fname
+
+decode_error_msg db 'Erro ao decodificar instrucao! PC: '
+decode_error_msg_size equ $-decode_error_msg
+
 test_string db '12 29 10 29 4 28 11 30 3 28 11 31 10 29 2 31 11 31 13 31 9 30 29 10 29 7 4 14 2 0 0 0 ', 0
 fsize_in_bytes dd 0
 
 program_data times BUFF_SIZE dd 0
 program_size dd 0
 program_size_in_bytes dd 0
+
+used_instructions	times BUFF_SIZE db 0
+used_instructions_count	dd 0
 
 section .bss
 ; func read_file
@@ -101,13 +108,20 @@ run_program:
 				mov ebx, 0
 
 run_program_loop:
-
-				;push eax
-				;call print_int
-				;add ESP, 4
-
+				; check if end of program was reached
 				cmp dword [program_size], ebx
 				je end
+
+				; add instruction to history
+				inc dword [used_instructions_count]
+				push eax
+				mov eax, dword [used_instructions_count]
+				add eax, used_instructions
+				mov cl, byte [program_data + ebx * 4]
+				mov [eax], cl
+				pop eax
+
+				; decode current instruction
 				cmp dword [program_data + ebx * 4], INSTR_ADD
 				je run_add
 				cmp dword [program_data + ebx * 4], INSTR_SUB
@@ -137,7 +151,21 @@ run_program_loop:
 				cmp dword [program_data + ebx * 4], INSTR_STOP
 				je run_stop
 
-				jmp end
+				push ebx
+
+				mov eax, 4
+				mov ebx, 1
+				mov ecx, decode_error_msg
+				mov edx, decode_error_msg_size
+				int 80h
+
+				call print_int
+				add ESP, 4
+
+				; return
+				mov eax, 1
+				mov ebx, 1
+				int 80h
 
 run_add:
 				inc ebx
@@ -206,11 +234,6 @@ run_load:
 				; load value into acc
 				mov ebx, dword [program_data + ebx * 4]
 				mov eax, dword [program_data + ebx * 4]
-
-				push eax
-				call print_int
-				add ESP, 4
-
 				; restore ebx as PC
 				pop ebx
 				inc ebx
@@ -237,7 +260,7 @@ run_output:
 				jmp run_program_loop
 				
 run_stop:
-				jmp run_program_loop
+				jmp end
 
 				
 end:
