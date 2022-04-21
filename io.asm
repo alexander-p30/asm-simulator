@@ -26,7 +26,8 @@ prompt_fname_size equ $-prompt_fname
 decode_error_msg db 'Erro ao decodificar instrucao! PC: '
 decode_error_msg_size equ $-decode_error_msg
 
-test_string db '12 29 10 29 4 28 11 30 3 28 11 31 10 29 2 31 11 31 13 31 9 30 29 10 29 7 4 14 2 0 0 0 ', 0
+debug_print db 'eax: '
+debug_print_size equ $-debug_print
 fsize_in_bytes dd 0
 
 program_data times BUFF_SIZE dd 0
@@ -113,6 +114,13 @@ run_program:
 
 run_program_loop:
 				; DEBUG PRINT ACC
+				;pusha
+				;mov eax, 4
+				;mov ebx, 1
+				;mov ecx, debug_print
+				;mov edx, debug_print_size
+				;int 80h
+				;popa
 				;push eax
 				;call print_int
 				;add ESP, 4
@@ -223,15 +231,42 @@ run_div:
 				jmp run_program_loop
 
 run_jmp:
+				inc ebx
+				; load jump address into ebx
+				mov ebx, dword [program_data + ebx * 4]
 				jmp run_program_loop
 
 run_jmpn:
+				inc ebx	
+				add eax, 0
+				js run_jmpn_true
+				inc ebx
+				jmp run_jmpn_end
+run_jmpn_true:
+				mov ebx, dword [program_data + ebx * 4]
+run_jmpn_end:
 				jmp run_program_loop
 
 run_jmpp:
+				inc ebx	
+				add eax, 0
+				jns run_jmpp_true
+				inc ebx
+				jmp run_jmpp_end
+run_jmpp_true:
+				mov ebx, dword [program_data + ebx * 4]
+run_jmpp_end:
 				jmp run_program_loop
 
 run_jmpz:
+				inc ebx	
+				cmp eax, 0
+				je run_jmpz_true
+				inc ebx
+				jmp run_jmpz_end
+run_jmpz_true:
+				mov ebx, dword [program_data + ebx * 4]
+run_jmpz_end:
 				jmp run_program_loop
 
 run_copy:
