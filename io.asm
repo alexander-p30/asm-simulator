@@ -61,7 +61,7 @@ used_instructions_char_count	dd 0
 
 ; output file data
 output_file_content times OUTPUT_FILE_MAXSIZE db 0
-output_file_name times BUFF_SIZE db 0
+output_file_name times 25 db 0
 
 ; file read error
 file_read_error_msg db 'Erro ao ler arquivo ou arquivo inexistente.', LINE_BR
@@ -104,6 +104,8 @@ _start:
 
 				add dword [fdescriptor], 0
 				jns file_read_success
+				cmp dword [fcontent], 0
+				jne file_read_success
 
 				mov eax, 4
 				mov ebx, 1
@@ -456,18 +458,18 @@ build_output_filename:
 build_output_filename_loop:
 				mov cl, byte [eax]
 				inc eax
-				inc ebx
-				mov [ebx], cl
 				cmp cl, 0
 				je build_output_filename_ext
+				mov [ebx], cl
+				inc ebx
 				jmp build_output_filename_loop
 build_output_filename_ext:
 				mov eax, output_file_ext
 build_output_filename_ext_loop:
 				mov cl, byte [eax]
 				inc eax
-				inc ebx
 				mov [ebx], cl
+				inc ebx
 				cmp cl, 0
 				je build_output_filecontent
 				jmp build_output_filename_ext_loop
@@ -620,7 +622,7 @@ add_instr_to_output_filecontent_end:
 write_output_file:
 				mov eax, 8
 				mov ebx, output_file_name
-				mov ecx, 0700
+				mov ecx, 666o
 				int 80h
 
 				push eax
@@ -631,6 +633,9 @@ write_output_file:
 				mov eax, 4
 				mov ecx, output_file_content
 				mov edx, OUTPUT_FILE_MAXSIZE
+				int 80h
+
+				mov eax, 6
 				int 80h
 
 				leave
