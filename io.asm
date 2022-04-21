@@ -571,20 +571,20 @@ int_to_string:
 
 				mov eax, INT_TO_CONVERT
 				mov ecx, INT_AS_STRING
-				mov bx, 10
+				mov ebx, 10
 				mov edx, 0
 int_to_string_loop:
 				mov edx, 0
 				div ebx
 				; transform modulus value to char
 				add edx, 48
-				push dx
+				push edx
 				inc cl
 				cmp eax, 0
 				jnz int_to_string_loop
 				mov eax, INT_AS_STRING
 int_to_string_invert:
-				pop dx
+				pop edx
 				mov byte [eax], dl
 				inc al
 				dec cl
