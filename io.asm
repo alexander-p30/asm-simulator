@@ -1,5 +1,6 @@
-%define BUFF_SIZE 1024
+%define BUFF_SIZE 50
 %define BUFF_SIZE_PLUS_ONE 1025
+%define OUTPUT_FILE_MAXSIZE 200
 %define SPACE_CHAR 32
 %define ZERO_CHAR 48
 %define NINE_CHAR 57
@@ -20,6 +21,24 @@
 %define INSTR_STOP		14
 
 section .data
+line_br db 0dH, 0ah
+; INSTRUCTION TEXT ==================
+instr_add_text db 'ADD', line_br
+instr_sub_text db 'SUB', line_br
+instr_mult_text db 'MULT', line_br
+instr_div_text db 'DIV', line_br
+instr_jmp_text db 'JMP', line_br
+instr_jmpn_text db 'JMPN', line_br
+instr_jmpp_text db 'JMPP', line_br
+instr_jmpz_text db 'JMPZ', line_br
+instr_copy_text db 'COPY', line_br
+instr_load_text db 'LOAD', line_br
+instr_store_text db 'STORE', line_br
+instr_input_text db 'INPUT', line_br
+instr_output_text db 'OUTPUT', line_br
+instr_stop_text db 'STOP', line_br
+; INSTRUCTION TEXT ==================
+
 prompt_fname db 'Digite o nome do arquivo: '
 prompt_fname_size equ $-prompt_fname
 
@@ -34,11 +53,15 @@ program_data times BUFF_SIZE dd 0
 program_size dd 0
 program_size_in_bytes dd 0
 
+output_file_ext db '.diss', 0
+output_file_ext_size equ $-output_file_ext
 
 used_instructions	times BUFF_SIZE db 0
 used_instructions_count	dd 0
 
 section .bss
+output_file_content resb OUTPUT_FILE_MAXSIZE
+output_file_name resb BUFF_SIZE
 ; func read_file
 fdescriptor resd 1
 fcontent resb BUFF_SIZE
@@ -73,13 +96,6 @@ _start:
 				push fname
 				call read_file
 				add ESP, 4
-
-				; print fcontent
-				mov eax, 4
-				mov ebx, 1
-				mov ecx, fcontent
-				mov edx, BUFF_SIZE
-				int 80h
 
 				mov ecx, fcontent
 				cmp dword [ecx], 0
@@ -167,6 +183,8 @@ run_program_loop:
 				je run_output
 				cmp dword [program_data + ebx * 4], INSTR_STOP
 				je run_stop
+
+				; ERROR: INSTRUCTION COULDN'T BE DECODED
 
 				push ebx
 
@@ -364,6 +382,13 @@ run_output:
 				jmp run_program_loop
 				
 run_stop:
+				; write disassemble file
+				push fname
+				push used_instructions
+				push used_instructions_count
+				call write_disassemble_file
+				add ESP, 12
+
 				jmp end
 
 				
@@ -408,6 +433,127 @@ read_file:
 				pop ecx
 				pop ebx
 				pop eax
+
+				leave
+				ret
+
+%define OUTPUT_FILE_NAME [EBP + 16]
+%define INST_HISTORY_PTR [EBP + 12]
+%define INST_COUNT [EBP + 8]
+write_disassemble_file:
+				enter 0, 0
+
+build_output_filename:
+				mov eax, OUTPUT_FILE_NAME
+				mov ebx, output_file_name
+				mov ecx, 0
+build_output_filename_loop:
+				mov cl, byte [eax]
+				inc eax
+				inc ebx
+				mov [ebx], cl
+				cmp cl, 0
+				je build_output_filename_ext
+				jmp build_output_filename_loop
+build_output_filename_ext:
+				mov eax, output_file_ext
+build_output_filename_ext_loop:
+				mov cl, byte [eax]
+				inc eax
+				inc ebx
+				mov [ebx], cl
+				cmp cl, 0
+				je write_output_file
+				jmp build_output_filename_ext_loop
+;build_output_filecontent:
+;				mov eax, used_instructions
+;				mov ebx, output_file_content
+;build_output_filecontent_loop:
+;				cmp dword [eax], INSTR_ADD
+;				je used_add
+;				cmp dword [eax], INSTR_SUB
+;				je used_sub
+;				cmp dword [eax], INSTR_MULT
+;				je used_mult
+;				cmp dword [eax], INSTR_DIV
+;				je used_div
+;				cmp dword [eax], INSTR_JMP
+;				je used_jmp
+;				cmp dword [eax], INSTR_JMPN
+;				je used_jmpn
+;				cmp dword [eax], INSTR_JMPP
+;				je used_jmpp
+;				cmp dword [eax], INSTR_JMPZ
+;				je used_jmpz
+;				cmp dword [eax], INSTR_COPY
+;				je used_copy
+;				cmp dword [eax], INSTR_LOAD
+;				je used_load
+;				cmp dword [eax], INSTR_STORE
+;				je used_store
+;				cmp dword [eax], INSTR_INPUT
+;				je used_input
+;				cmp dword [eax], INSTR_OUTPUT
+;				je used_output
+;				cmp dword [eax], INSTR_STOP
+;				je used_stop
+;used_add:
+;				mov ecx, instr_add_text
+;				jmp add_instr_to_output_filecontent
+;used_sub:
+;				mov ecx, instr_sub_text
+;				jmp add_instr_to_output_filecontent
+;used_mult:
+;				mov ecx, instr_mult_text
+;				jmp add_instr_to_output_filecontent
+;used_div:
+;				mov ecx, instr_div_text
+;				jmp add_instr_to_output_filecontent
+;used_jmp:
+;				mov ecx, instr_jmp_text
+;				jmp add_instr_to_output_filecontent
+;used_jmpn:
+;				mov ecx, instr_jmpn_text
+;				jmp add_instr_to_output_filecontent
+;used_jmpp:
+;				mov ecx, instr_jmpp_text
+;				jmp add_instr_to_output_filecontent
+;used_jmpz:
+;				mov ecx, instr_jmpz_text
+;				jmp add_instr_to_output_filecontent
+;used_copy:
+;				mov ecx, instr_copy_text
+;				jmp add_instr_to_output_filecontent
+;used_load:
+;				mov ecx, instr_load_text
+;				jmp add_instr_to_output_filecontent
+;used_store:
+;				mov ecx, instr_store_text
+;				jmp add_instr_to_output_filecontent
+;used_input:
+;				mov ecx, instr_input_text
+;				jmp add_instr_to_output_filecontent
+;used_output:
+;				mov ecx, instr_output_text
+;				jmp add_instr_to_output_filecontent
+;used_stop:
+;				mov ecx, instr_stop_text
+;				jmp write_output_file
+;add_instr_to_output_filecontent:
+;				mov dl, byte [ecx]
+;				mov [eax], dl
+;				inc eax
+;				inc ecx
+;				cmp byte [ecx], 0dH
+;				je build_output_filecontent_loop
+;				jmp add_instr_to_output_filecontent
+;				
+write_output_file:
+				mov eax, 4
+				mov ebx, 1
+				mov ecx, output_file_name
+				mov edx, OUTPUT_FILE_MAXSIZE
+				int 80h
 
 				leave
 				ret
