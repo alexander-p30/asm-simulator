@@ -63,6 +63,10 @@ used_instructions_char_count	dd 0
 output_file_content times OUTPUT_FILE_MAXSIZE db 0
 output_file_name times BUFF_SIZE db 0
 
+; file read error
+file_read_error_msg db 'Erro ao ler arquivo ou arquivo inexistente.', LINE_BR
+file_read_error_msg_size equ $-file_read_error_msg
+
 section .bss
 ; func read_file
 fdescriptor resd 1
@@ -98,9 +102,21 @@ _start:
 				call read_file
 				add ESP, 4
 
+				add dword [fdescriptor], 0
+				jns file_read_success
+
+				mov eax, 4
+				mov ebx, 1
+				mov ecx, file_read_error_msg
+				mov edx, file_read_error_msg_size
+				int 80h
+
+				mov eax, 1
+				mov ebx, 1
+				int 80h
+
+file_read_success:
 				mov ecx, fcontent
-				cmp dword [ecx], 0
-				je run_program
 
 				; init counter
 				mov eax, 0
