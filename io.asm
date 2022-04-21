@@ -622,8 +622,9 @@ write_output_file:
 
 %define INT_TO_CONVERT [EBP + 12]
 %define INT_AS_STRING [EBP + 8]
+%define INT_AS_STRING_NUMBER_START [EBP - 4]
 int_to_string:
-				enter 0, 0
+				enter 4, 0
 
 				; save registers
 				push eax
@@ -633,7 +634,17 @@ int_to_string:
 
 				mov eax, INT_TO_CONVERT
 				mov ecx, INT_AS_STRING
+				mov INT_AS_STRING_NUMBER_START, ecx
 				mov ebx, 10
+				mov edx, 0
+				add eax, 0
+				jns int_to_string_loop
+				; convert "unsigned" to signed
+				mov byte [ecx], 45
+				inc ecx
+				add dword INT_AS_STRING_NUMBER_START, 1
+				sub edx, 1
+				imul edx
 				mov edx, 0
 int_to_string_loop:
 				mov edx, 0
@@ -641,20 +652,20 @@ int_to_string_loop:
 				; transform modulus value to char
 				add edx, 48
 				push edx
-				inc cl
+				inc ecx
 				cmp eax, 0
 				jnz int_to_string_loop
-				mov eax, INT_AS_STRING
+				mov eax, INT_AS_STRING_NUMBER_START
 int_to_string_invert:
 				pop edx
 				mov byte [eax], dl
-				inc al
-				dec cl
-				cmp ecx, INT_AS_STRING
+				inc eax
+				dec ecx
+				cmp ecx, INT_AS_STRING_NUMBER_START
 				ja int_to_string_invert
 
 				mov byte [eax], 0Dh
-				inc al
+				inc eax
 				mov byte [eax], 0Ah
 
 				; restore registers
