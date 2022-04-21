@@ -1,3 +1,6 @@
+; TODO: output only instructions that were run
+; TODO: write readme
+; TODO: allow receiving negative numbers (conver negative number string to a negative number)
 %define BUFF_SIZE 1024
 %define BUFF_SIZE_PLUS_ONE 1025
 %define OUTPUT_FILE_MAXSIZE 4096
@@ -80,23 +83,26 @@ digits_string resb BUFF_SIZE
 program_input resb BUFF_SIZE
 
 section .text
-global _start
-_start:	
-				; print prompt_fname
+global c_entrypoint
+%define ARGV_1 [EBP + 8]
+c_entrypoint:
+				enter 0, 0
+
+				mov ebx, ARGV_1
+				mov eax, 0
+c_entrypoint_count_loop:
+				mov cl, [ebx + eax]
+				mov [fname + eax], cl
+				cmp cl, 0
+				je c_entrypoint_end
+				inc eax
+				jmp c_entrypoint_count_loop
+
+c_entrypoint_end:
 				mov eax, 4
 				mov ebx, 1
-				mov ecx, prompt_fname
-				mov edx, prompt_fname_size
-				int 80h
-
-				; get fname
-				mov eax, 3
-				mov ebx, 1
 				mov ecx, fname
-				mov edx, BUFF_SIZE
-				int 80h
-				; add 0 to end of string
-				mov byte [ecx + eax - 1], 0
+				mov edx, 13
 
 				push fname
 				call read_file
@@ -403,9 +409,8 @@ run_stop:
 				
 end:
 				; return
-				mov eax, 1
-				mov ebx, 0
-				int 80h
+				leave 
+				ret
 
 %define FILE_TO_READ [EBP + 8]
 read_file:
