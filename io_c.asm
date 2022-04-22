@@ -1,4 +1,3 @@
-; TODO: output only instructions that were run
 ; TODO: write readme
 ; TODO: allow receiving negative numbers (conver negative number string to a negative number)
 %define BUFF_SIZE 1024
@@ -65,6 +64,7 @@ used_instructions_char_count	dd 0
 ; output file data
 output_file_content times OUTPUT_FILE_MAXSIZE db 0
 output_file_name times 25 db 0
+output_file_position dd 0
 
 ; file read error
 file_read_error_msg db 'Erro ao ler arquivo ou arquivo inexistente.', LINE_BR
@@ -227,6 +227,16 @@ run_add:
 				; restore ebx as PC
 				pop ebx
 				inc ebx
+				
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_add_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_sub:
@@ -238,6 +248,16 @@ run_sub:
 				; restore ebx as PC
 				pop ebx
 				inc ebx
+				
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_sub_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_mult:
@@ -250,6 +270,16 @@ run_mult:
 				; restore ebx as PC
 				pop ebx
 				inc ebx
+				
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_mult_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_div:
@@ -262,12 +292,32 @@ run_div:
 				; restore ebx as PC
 				pop ebx
 				inc ebx
+
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_div_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_jmp:
 				inc ebx
 				; load jump address into ebx
 				mov ebx, dword [program_data + ebx * 4]
+
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_jmp_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_jmpn:
@@ -279,6 +329,16 @@ run_jmpn:
 run_jmpn_true:
 				mov ebx, dword [program_data + ebx * 4]
 run_jmpn_end:
+
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_jmpn_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_jmpp:
@@ -290,6 +350,16 @@ run_jmpp:
 run_jmpp_true:
 				mov ebx, dword [program_data + ebx * 4]
 run_jmpp_end:
+
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_jmpp_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_jmpz:
@@ -301,6 +371,15 @@ run_jmpz:
 run_jmpz_true:
 				mov ebx, dword [program_data + ebx * 4]
 run_jmpz_end:
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_jmpz_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_copy:
@@ -318,6 +397,16 @@ run_copy:
 				; restore eax as acc
 				pop eax
 				inc ebx
+
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_copy_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_load:
@@ -329,6 +418,16 @@ run_load:
 				; restore ebx as PC
 				pop ebx
 				inc ebx
+
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_load_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_store:
@@ -341,6 +440,16 @@ run_store:
 				; restore ebx as PC
 				pop ebx
 				inc ebx
+
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_store_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_input:
@@ -379,6 +488,16 @@ run_input:
 				; restore eax as acc
 				pop eax
 				inc ebx
+
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_input_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 
 run_output:
@@ -395,9 +514,28 @@ run_output:
 				; restore ebx as PC
 				pop ebx
 				inc ebx
+
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_output_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				jmp run_program_loop
 				
 run_stop:
+				; add instruction to output file
+				push eax
+				push edx
+				push instr_stop_text
+				call add_instr_to_output_filecontent
+				add ESP, 4
+				pop edx
+				pop eax
+
 				; write disassemble file
 				push fname
 				push used_instructions
@@ -476,154 +614,9 @@ build_output_filename_ext_loop:
 				mov [ebx], cl
 				inc ebx
 				cmp cl, 0
-				je build_output_filecontent
+				je write_output_file
 				jmp build_output_filename_ext_loop
-build_output_filecontent:
-				mov eax, 0
-				mov ebx, 0
-build_output_filecontent_loop:
-				; DEBUG PRINT ACC
-				;pusha
-				;mov eax, 4
-				;mov ebx, 1
-				;mov ecx, debug_print
-				;mov edx, debug_print_size
-				;int 80h
-				;popa
-				;push eax
-				;call print_int
-				;add ESP, 4
 
-
-				cmp dword [program_data + ebx * 4], INSTR_ADD
-				je used_add
-				cmp dword [program_data + ebx * 4], INSTR_SUB
-				je used_sub
-				cmp dword [program_data + ebx * 4], INSTR_MULT
-				je used_mult
-				cmp dword [program_data + ebx * 4], INSTR_DIV
-				je used_div
-				cmp dword [program_data + ebx * 4], INSTR_JMP
-				je used_jmp
-				cmp dword [program_data + ebx * 4], INSTR_JMPN
-				je used_jmpn
-				cmp dword [program_data + ebx * 4], INSTR_JMPP
-				je used_jmpp
-				cmp dword [program_data + ebx * 4], INSTR_JMPZ
-				je used_jmpz
-				cmp dword [program_data + ebx * 4], INSTR_COPY
-				je used_copy
-				cmp dword [program_data + ebx * 4], INSTR_LOAD
-				je used_load
-				cmp dword [program_data + ebx * 4], INSTR_STORE
-				je used_store
-				cmp dword [program_data + ebx * 4], INSTR_INPUT
-				je used_input
-				cmp dword [program_data + ebx * 4], INSTR_OUTPUT
-				je used_output
-				cmp dword [program_data + ebx * 4], INSTR_STOP
-				je used_stop
-used_add:
-				push instr_add_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_sub:
-				push instr_sub_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_mult:
-				push instr_mult_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_div:
-				push instr_div_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_jmp:
-				push instr_jmp_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_jmpn:
-				push instr_jmpn_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_jmpp:
-				push instr_jmpp_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_jmpz:
-				push instr_jmpz_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_copy:
-				push instr_copy_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 3
-				jmp build_output_filecontent_loop
-used_load:
-				push instr_load_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_store:
-				push instr_store_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_input:
-				push instr_input_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_output:
-				push instr_output_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				add ebx, 2
-				jmp build_output_filecontent_loop
-used_stop:
-				push instr_stop_text
-				call add_instr_to_output_filecontent
-				add ESP, 4
-				jmp write_output_file
-
-%define INSTR_TO_ADD [ESP + 8]
-add_instr_to_output_filecontent:
-				enter 0, 0
-				mov ecx, INSTR_TO_ADD
-add_instr_to_output_filecontent_loop:
-				mov edx, 0
-				mov dl, byte [ecx]
-				mov [output_file_content + eax], dl
-				inc eax
-				cmp byte [ecx], 0aH
-				je add_instr_to_output_filecontent_end
-				inc ecx
-				jmp add_instr_to_output_filecontent_loop
-add_instr_to_output_filecontent_end:
-				leave
-				ret
-				
 write_output_file:
 				mov eax, 8
 				mov ebx, output_file_name
@@ -636,12 +629,37 @@ write_output_file:
 				mov edx, OUTPUT_FILE_MAXSIZE
 				int 80h
 
+				mov eax, 4
+				mov ebx, 1
+				mov ecx, output_file_content
+				mov edx, OUTPUT_FILE_MAXSIZE
+				int 80h
+
 				mov eax, 6
 				int 80h
 
 				leave
 				ret
 
+%define INSTR_TO_ADD [ESP + 8]
+add_instr_to_output_filecontent:
+				enter 0, 0
+				mov eax, [output_file_position]
+				mov ecx, INSTR_TO_ADD
+add_instr_to_output_filecontent_loop:
+				mov edx, 0
+				mov dl, byte [ecx]
+				mov [output_file_content + eax], dl
+				inc eax
+				cmp byte [ecx], 0aH
+				je add_instr_to_output_filecontent_end
+				inc ecx
+				jmp add_instr_to_output_filecontent_loop
+add_instr_to_output_filecontent_end:
+				mov [output_file_position], eax
+				leave
+				ret
+				
 %define INT_TO_CONVERT [EBP + 12]
 %define INT_AS_STRING [EBP + 8]
 %define INT_AS_STRING_NUMBER_START [EBP - 4]
