@@ -1,11 +1,12 @@
 ; TODO: write readme
-; TODO: allow receiving negative numbers (conver negative number string to a negative number)
+; TODO: write only the necessary number of bytes and return it on eax
 %define BUFF_SIZE 1024
 %define BUFF_SIZE_PLUS_ONE 1025
 %define OUTPUT_FILE_MAXSIZE 4096
 %define SPACE_CHAR 32
 %define ZERO_CHAR 48
 %define NINE_CHAR 57
+%define MINUS_CHAR 45
 
 %define INSTR_ADD			1
 %define INSTR_SUB			2
@@ -63,7 +64,7 @@ used_instructions_char_count	dd 0
 
 ; output file data
 output_file_content times OUTPUT_FILE_MAXSIZE db 0
-output_file_name times 25 db 0
+output_file_name times 256 db 0
 output_file_position dd 0
 
 ; file read error
@@ -629,12 +630,6 @@ write_output_file:
 				mov edx, OUTPUT_FILE_MAXSIZE
 				int 80h
 
-				mov eax, 4
-				mov ebx, 1
-				mov ecx, output_file_content
-				mov edx, OUTPUT_FILE_MAXSIZE
-				int 80h
-
 				mov eax, 6
 				int 80h
 
@@ -756,25 +751,39 @@ print_int_end:
 
 ; ecx = string_ptr, edx = int
 %define STRING_TO_CONVERT [EBP + 8]
+%define IS_NEGATIVE [EBP - 4]
 string_to_int:
-				enter 0, 0
+				enter 4, 0
 				push eax
 				push ebx
 				mov ecx, STRING_TO_CONVERT
 				mov edx, 0
 				mov eax, 0
+				mov dword IS_NEGATIVE, 0
 string_to_int_find_int_start:
 				cmp byte [ecx], ZERO_CHAR
 				jae string_to_int_higher_than_zero
 				jmp string_to_int_find_int_start_next
 string_to_int_higher_than_zero:
 				cmp byte [ecx], NINE_CHAR
-				jle string_to_int_loop
+				jle its_a_digit
 string_to_int_find_int_start_next:
 				cmp byte [ecx], 0
 				je string_to_int_end
 				inc ecx
 				jmp string_to_int_find_int_start
+its_a_digit:
+				cmp ecx, STRING_TO_CONVERT
+				je string_to_int_loop
+				push ecx
+				dec ecx
+				cmp byte [ecx], MINUS_CHAR
+				je its_negative
+				pop ecx
+				jmp string_to_int_loop
+its_negative:
+				pop ecx
+				mov dword IS_NEGATIVE, 1
 string_to_int_loop:
 				cmp byte [ecx], ZERO_CHAR
 				jb string_to_int_end
@@ -791,6 +800,14 @@ string_to_int_loop:
 				jmp string_to_int_loop
 				
 string_to_int_end:
+				cmp dword IS_NEGATIVE, 1
+				jne string_to_int_return
+				mov edx, 0
+				push ebx
+				mov ebx, -1
+				imul ebx
+				pop ebx
+string_to_int_return:
 				mov edx, eax
 				pop ebx
 				pop eax
