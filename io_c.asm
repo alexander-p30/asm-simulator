@@ -1,5 +1,4 @@
 ; TODO: write readme
-; TODO: write only the necessary number of bytes and return it on eax
 %define BUFF_SIZE 1024
 %define OUTPUT_FILE_MAXSIZE 4096
 %define ZERO_CHAR 48
@@ -59,6 +58,7 @@ used_instructions_char_count	dd 0
 output_file_content times OUTPUT_FILE_MAXSIZE db 0
 output_file_name times 256 db 0
 output_file_position dd 0
+output_file_size dd 0
 
 ; file read error
 file_read_error_msg db 'Erro ao ler arquivo ou arquivo inexistente.', LINE_BR
@@ -540,6 +540,7 @@ run_stop:
 
 				
 end:
+				mov eax, [output_file_size]
 				; return
 				leave 
 				ret
@@ -620,7 +621,7 @@ write_output_file:
 				mov ebx, eax
 				mov eax, 4
 				mov ecx, output_file_content
-				mov edx, OUTPUT_FILE_MAXSIZE
+				mov edx, [output_file_size]
 				int 80h
 
 				mov eax, 6
@@ -639,6 +640,7 @@ add_instr_to_output_filecontent_loop:
 				mov dl, byte [ecx]
 				mov [output_file_content + eax], dl
 				inc eax
+				inc dword [output_file_size]
 				cmp byte [ecx], 0aH
 				je add_instr_to_output_filecontent_end
 				inc ecx
