@@ -8,7 +8,17 @@ O trabalho consiste em escrever, em IA-32, um simulador do assembly fictício vi
 
 Foram implementados um simulador "standalone", ou seja, que roda em qualquer máquina e que não depende de uma chamada de função em C e também um simulador que depende de uma chamada de função em C, que só funciona em máquinas de 32 bits.
 
-Ao final da execução, será imprimida na tela uma mensagem com o tamanho do arquivo de disassembly parcial gerado. A separação do output da execução do simulador e do output dessa mensagem é dada por uma linha de caracteres `=`.
+Ao final da execução, será imprimida na tela uma mensagem com o tamanho do arquivo de disassembly parcial gerado. A separação do output da execução do simulador e do output dessa mensagem é dada por uma linha de caracteres `=`. Exemplo de execução abaixo:
+
+```bash
+59b658ed9565# ./main.out asm_examples/fat.txt
+5
+1
+0
+1
+=====================
+O arquivo de saida (asm_examples/fat.txt.diss) ocupa 226 B.
+```
 
 A pasta `asm_examples` contém vários arquivos de exemplo do assembly inventado usados para o teste deste simulador.
 
