@@ -1,5 +1,11 @@
 #include <stdio.h>
 
+extern int c_entrypoint(char *);
+
+int fsize_in_bytes(char * argv[]) {
+  return c_entrypoint(argv[1]);
+}
+
 int main(int argc, char * argv[]) {
   if(argc != 2) {
     printf("Erro! Forneca o nome de um arquivo.\n");
@@ -7,8 +13,10 @@ int main(int argc, char * argv[]) {
     return 1;
   }
 
-  extern int c_entrypoint(char *);
-  c_entrypoint(argv[1]);
+  int fsize = fsize_in_bytes(argv);
+
+  printf("=====================\n");
+  printf("O arquivo de saida tem %d B\n", fsize);
 
   return 0;
 }
