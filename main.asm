@@ -93,10 +93,7 @@ c_entrypoint_count_loop:
 				jmp c_entrypoint_count_loop
 
 c_entrypoint_end:
-				mov eax, 4
-				mov ebx, 1
-				mov ecx, fname
-				mov edx, 13
+				mov ebx, 0
 
 				push fname
 				call read_file
@@ -257,10 +254,13 @@ run_sub:
 run_mult:
 				inc ebx
 				push ebx
+				push edx
 				; load value address
 				mov ebx, dword [program_data + ebx * 4]
 				mov ecx, dword [program_data + ebx * 4]
+				mov edx, 0
 				mul ecx
+				pop edx
 				; restore ebx as PC
 				pop ebx
 				inc ebx
@@ -279,10 +279,13 @@ run_mult:
 run_div:
 				inc ebx
 				push ebx
+				push edx
 				; load value address
 				mov ebx, dword [program_data + ebx * 4]
 				mov ecx, dword [program_data + ebx * 4]
+				mov edx, 0
 				div ecx
+				pop edx
 				; restore ebx as PC
 				pop ebx
 				inc ebx
@@ -316,8 +319,8 @@ run_jmp:
 
 run_jmpn:
 				inc ebx	
-				add eax, 0
-				js run_jmpn_true
+				cmp eax, 0
+				jl run_jmpn_true
 				inc ebx
 				jmp run_jmpn_end
 run_jmpn_true:
@@ -337,8 +340,8 @@ run_jmpn_end:
 
 run_jmpp:
 				inc ebx	
-				add eax, 0
-				jns run_jmpp_true
+				cmp eax, 0
+				jg run_jmpp_true
 				inc ebx
 				jmp run_jmpp_end
 run_jmpp_true:
@@ -379,15 +382,15 @@ run_jmpz_end:
 run_copy:
 				inc ebx
 				push eax
-				; load target address
-				mov edx, dword [program_data + ebx * 4]
 				; load source address
+				mov edx, dword [program_data + ebx * 4]
+				; load target address
 				inc ebx
 				mov eax, dword [program_data + ebx * 4]
 				; load source value
-				mov ecx, dword [program_data + eax * 4]
+				mov ecx, dword [program_data + edx * 4]
 				; store source value into target address
-				mov dword [program_data + edx * 4], ecx
+				mov dword [program_data + eax * 4], ecx
 				; restore eax as acc
 				pop eax
 				inc ebx
@@ -633,6 +636,7 @@ write_output_file:
 %define INSTR_TO_ADD [ESP + 8]
 add_instr_to_output_filecontent:
 				enter 0, 0
+
 				mov eax, [output_file_position]
 				mov ecx, INSTR_TO_ADD
 add_instr_to_output_filecontent_loop:
