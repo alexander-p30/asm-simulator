@@ -1,9 +1,7 @@
 ; TODO: write readme
 ; TODO: write only the necessary number of bytes and return it on eax
 %define BUFF_SIZE 1024
-%define BUFF_SIZE_PLUS_ONE 1025
 %define OUTPUT_FILE_MAXSIZE 4096
-%define SPACE_CHAR 32
 %define ZERO_CHAR 48
 %define NINE_CHAR 57
 %define MINUS_CHAR 45
@@ -42,22 +40,17 @@ instr_output_text db 'OUTPUT', LINE_BR
 instr_stop_text db 'STOP', LINE_BR
 ; INSTRUCTION TEXT ==================
 
-prompt_fname db 'Digite o nome do arquivo: '
-prompt_fname_size equ $-prompt_fname
-
 decode_error_msg db 'Erro ao decodificar instrucao! PC: '
 decode_error_msg_size equ $-decode_error_msg
 
 debug_print db 'eax: '
 debug_print_size equ $-debug_print
-fsize_in_bytes dd 0
 
 program_data times BUFF_SIZE dd 0
 program_size dd 0
 program_size_in_bytes dd 0
 
 output_file_ext db '.diss', 0
-output_file_ext_size equ $-output_file_ext
 
 used_instructions	times BUFF_SIZE dd 0
 used_instructions_char_count	dd 0
