@@ -9,7 +9,7 @@ int fsize_in_bytes(char * argv[]) {
 int main(int argc, char * argv[]) {
   if(argc != 2) {
     printf("Erro! Forneca o nome de um arquivo.\n");
-    printf("\tEx: ./io teste.txt\n");
+    printf("\tEx: ./main.out asm_examples/fat.txt\n");
     return 1;
   }
 
