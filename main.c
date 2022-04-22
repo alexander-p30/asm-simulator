@@ -16,7 +16,7 @@ int main(int argc, char * argv[]) {
   int fsize = fsize_in_bytes(argv);
 
   printf("=====================\n");
-  printf("O arquivo de saida tem %d B\n", fsize);
+  printf("O arquivo de saida (%s.diss) ocupa %d B.\n", argv[1], fsize);
 
   return 0;
 }
