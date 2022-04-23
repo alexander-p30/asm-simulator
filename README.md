@@ -1,12 +1,14 @@
 # Trabalho 2 de Software Básico - 2021/2
 
-## Sumário
+## Identificação
 
-### Estevan Alexander de Paula - 17/0009611
+Estevan Alexander de Paula - 17/0009611
+
+## Descrição
 
 O trabalho consiste em escrever, em IA-32, um simulador do assembly fictício visto em aula.
 
-Foram implementados um simulador "standalone", ou seja, que roda em qualquer máquina e que não depende de uma chamada de função em C e também um simulador que depende de uma chamada de função em C, que só funciona em máquinas de 32 bits.
+Foram implementados um simulador "standalone", ou seja, que roda em qualquer máquina e que não depende de uma chamada de função em C; e também um simulador que depende de uma chamada de função em C, que só funciona em máquinas de 32 bits.
 
 Ao final da execução, será imprimida na tela uma mensagem com o tamanho do arquivo de disassembly parcial gerado. A separação do output da execução do simulador e do output dessa mensagem é dada por uma linha de caracteres `=`. Exemplo de execução abaixo:
 
