@@ -1,4 +1,3 @@
-; TODO: write readme
 %define BUFF_SIZE 1024
 %define OUTPUT_FILE_MAXSIZE 4096
 %define ZERO_CHAR 48
