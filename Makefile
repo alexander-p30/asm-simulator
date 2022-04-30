@@ -1,6 +1,6 @@
 run32: 
 		docker build -t ubuntu32 .
-		docker run -it --rm -v $$PWD:/app -w /app/ ubuntu32 zsh
+		docker run -it --rm -v $$PWD:/app -w /app/ ubuntu32 bash
 
 comp32:
 		nasm -f elf main.asm -o build/main.o 
