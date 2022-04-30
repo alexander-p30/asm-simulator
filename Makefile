@@ -10,3 +10,5 @@ comp_standalone:
 		nasm -f elf -o build/standalone.o standalone.asm 
 		ld -m elf_i386 -o standalone.out build/standalone.o
 
+clean:
+		rm build/main.o build/standalone.o

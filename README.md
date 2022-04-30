@@ -4,6 +4,16 @@
 
 Estevan Alexander de Paula - 17/0009611
 
+## Disclaimer
+
+Caso o setup do docker de 32 bits seja utilizado, como sugerem as instruções abaixo, é possível que builds subsequentes falhem na máquina host devido ao esquema permissões entre host-container (o host não consegue sobrescrever arquivos que foram criados pelo container). Caso isso ocorra, basta rodar:
+
+```bash
+make clean
+```
+
+Dessa forma, os arquivos objeto dentro da pasta build são excluídos, possibilitando novas compilações/montagens.
+
 ## Descrição
 
 O trabalho consiste em escrever, em IA-32, um simulador do assembly fictício visto em aula.
